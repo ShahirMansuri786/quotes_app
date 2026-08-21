@@ -1,0 +1,60 @@
+<div class="hero">
+  <div>
+    <h1>Daily Quotes</h1>
+    <p>Share words that inspire, motivate, and connect people.</p>
+  </div>
+
+  <% if user_signed_in? %>
+    <%= link_to "＋ Write a Quote",
+                new_quote_path,
+                class: "btn btn-primary" %>
+  <% end %>
+</div>
+
+<div class="quotes-grid">
+
+  <% @quotes.each do |quote| %>
+
+    <article class="quote-card">
+
+      <div class="quote-mark">“</div>
+
+      <p class="quote-content">
+        <%= quote.content %>
+      </p>
+
+      <div class="quote-author">
+        <div class="avatar">
+          <%= quote.user.name.first.upcase %>
+        </div>
+
+        <div>
+          <strong><%= quote.user.name %></strong>
+
+          <small>
+            <%= time_ago_in_words(quote.created_at) %> ago
+          </small>
+        </div>
+      </div>
+
+      <div class="quote-footer">
+
+        <span>
+          ❤️ <%= quote.likes.count %>
+        </span>
+
+        <span>
+          💬 <%= quote.comments.count %>
+        </span>
+
+        <%= link_to "View Quote",
+                    quote_path(quote),
+                    class: "view-link" %>
+
+      </div>
+
+    </article>
+
+  <% end %>
+
+</div>

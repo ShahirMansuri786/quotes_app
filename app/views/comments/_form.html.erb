@@ -1,0 +1,14 @@
+<div class="comment-form">
+
+  <%= form_with model: [quote, comment] do |form| %>
+
+    <%= form.text_area :content,
+          rows: 3,
+          placeholder: "Write a comment..." %>
+
+    <%= form.submit "Comment",
+          class: "btn btn-primary" %>
+
+  <% end %>
+
+</div>

@@ -1,0 +1,27 @@
+<% if user_signed_in? %>
+
+  <% like = quote.likes.find_by(user: current_user) %>
+
+  <% if like %>
+
+    <%= button_to "💔 Unlike",
+                  quote_like_path(quote, like),
+                  method: :delete,
+                  class: "like-button liked" %>
+
+  <% else %>
+
+    <%= button_to "❤️ Like",
+                  quote_likes_path(quote),
+                  method: :post,
+                  class: "like-button" %>
+
+  <% end %>
+
+<% else %>
+
+  <%= link_to "❤️ Like",
+              new_user_session_path,
+              class: "like-button" %>
+
+<% end %>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Quotes App" %></title>
+
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Quotes App">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+
+    <header class="navbar">
+
+      <%= link_to "QuoteSpace", root_path, class: "logo" %>
+
+      <nav>
+
+        <% if user_signed_in? %>
+
+          <span>
+            Hi, <%= current_user.name %>
+          </span>
+
+          <%= link_to "Write Quote",
+                      new_quote_path,
+                      class: "btn btn-primary" %>
+
+          <%= button_to "Logout",
+                        destroy_user_session_path,
+                        method: :delete,
+                        class: "btn btn-secondary" %>
+
+        <% else %>
+
+          <%= link_to "Login",
+                      new_user_session_path %>
+
+          <%= link_to "Sign Up",
+                      new_user_registration_path,
+                      class: "btn btn-primary" %>
+
+        <% end %>
+
+      </nav>
+
+    </header>
+
+     <!-- Notification Popup -->
+
+    <% if user_signed_in? %>
+
+      <% unread_notifications = current_user.notifications.unread.order(created_at: :desc) %>
+
+      <% if unread_notifications.any? %>
+        
+
+        <div id="notification-popup" class="notification-popup">
+
+          <div class="notification-icon">
+            🔔
+          </div>
+
+          <div class="notification-content">
+            <% unread_notifications.each do |notification| %>
+              <p>
+                <%= notification.message %>
+              </p>
+            <% end %>
+          </div>
+
+          <button
+            type="button"
+            class="notification-close"
+            onclick="closeNotification()">
+            ×
+          </button>
+
+          <% current_user.notifications.update_all(read: true) %>
+
+        </div>
+
+      <% end %>
+      
+
+    <% end %>
+
+    <main class="container">
+
+      <% if notice %>
+        <div class="notice">
+          <%= notice %>
+        </div>
+      <% end %>
+
+      <% if alert %>
+        <div class="alert">
+          <%= alert %>
+        </div>
+      <% end %>
+
+      <%= yield %>
+
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const notification = document.getElementById("notification-popup");
+
+        if (notification) {
+          setTimeout(function () {
+            notification.style.opacity = "0";
+            notification.style.transform = "translate(-50%, -20px)";
+
+            setTimeout(function () {
+              notification.remove();
+            }, 300);
+
+          }, 5000);
+        }
+      });
+
+      function closeNotification() {
+        const notification = document.getElementById("notification-popup");
+
+        if (notification) {
+          notification.remove();
+        }
+      }
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,101 @@
+<div class="quote-detail">
+
+  <div class="quote-mark">“</div>
+
+  <h1>
+    <%= @quote.content %>
+  </h1>
+
+  <div class="quote-author">
+    <div class="avatar">
+      <%= @quote.user.name.first.upcase %>
+    </div>
+
+    <div>
+      <strong><%= @quote.user.name %></strong>
+
+      <small>
+        <%= time_ago_in_words(@quote.created_at) %> ago
+      </small>
+    </div>
+  </div>
+
+  <div class="actions">
+
+    <%= render "likes/button", quote: @quote %>
+
+    <% if @quote.user == current_user %>
+
+      <%= link_to "Edit",
+                  edit_quote_path(@quote),
+                  class: "btn btn-secondary" %>
+
+      <%= button_to "Delete",
+                    quote_path(@quote),
+                    method: :delete,
+                    data: { turbo_confirm: "Delete this quote?" },
+                    class: "btn btn-danger" %>
+
+    <% end %>
+
+  </div>
+
+</div>
+
+
+<div class="comments-section">
+
+  <h2>
+    Comments
+    <span>(<%= @quote.comments.count %>)</span>
+  </h2>
+
+  <% if user_signed_in? %>
+
+    <%= render "comments/form",
+               quote: @quote,
+               comment: @comment %>
+
+  <% else %>
+
+    <p>
+      <%= link_to "Login", new_user_session_path %>
+      to leave a comment.
+    </p>
+
+  <% end %>
+
+
+  <div class="comments-list">
+
+    <% @quote.comments.order(created_at: :desc).each do |comment| %>
+
+      <div class="comment">
+
+        <div class="avatar">
+          <%= comment.user.name.first.upcase %>
+        </div>
+
+        <div class="comment-body">
+
+          <strong>
+            <%= comment.user.name %>
+          </strong>
+
+          <small>
+            <%= time_ago_in_words(comment.created_at) %> ago
+          </small>
+
+          <p>
+            <%= comment.content %>
+          </p>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</div>

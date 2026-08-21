@@ -1,0 +1,25 @@
+<div class="form-card">
+
+  <%= form_with model: quote do |form| %>
+
+    <% if quote.errors.any? %>
+      <div class="error-box">
+        <% quote.errors.full_messages.each do |message| %>
+          <p><%= message %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= form.label :content, "Your Quote" %>
+
+      <%= form.text_area :content,
+            rows: 6,
+            placeholder: "Write something inspiring..." %>
+    </div>
+
+    <%= form.submit class: "btn btn-primary" %>
+
+  <% end %>
+
+</div>

@@ -1,0 +1,58 @@
+<div class="messages-page">
+
+  <div class="messages-header">
+    <div>
+      <h1>Messages</h1>
+      <p>Choose someone to start a conversation.</p>
+    </div>
+  </div>
+
+  <div class="users-card">
+
+    <% if @users.any? %>
+
+      <% @users.each do |user| %>
+
+        <div class="user-row">
+
+          <div class="user-avatar">
+            <%= user.name.first.upcase %>
+          </div>
+
+          <div class="user-info">
+            <strong>
+              <%= user.name %>
+            </strong>
+
+            <span>
+              Start a conversation
+            </span>
+          </div>
+
+          <%= button_to "Chat →",
+              conversations_path,
+              method: :post,
+              params: { user_id: user.id },
+              class: "chat-user-btn" %>
+
+        </div>
+
+      <% end %>
+
+    <% else %>
+
+      <div class="empty-users">
+        <div class="empty-icon">👥</div>
+
+        <h3>No other users yet</h3>
+
+        <p>
+          When other users register, you'll be able to message them here.
+        </p>
+      </div>
+
+    <% end %>
+
+  </div>
+
+</div>

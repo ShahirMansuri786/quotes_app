@@ -1,0 +1,111 @@
+<div class="chat-page"
+     data-controller="chat"
+     data-conversation-id="<%= @conversation.id %>">
+
+  <div class="chat-container">
+
+    <!-- Chat Header -->
+
+    <div class="chat-header">
+
+      <%= link_to "←",
+                  conversations_path,
+                  class: "back-chat" %>
+
+      <div class="user-avatar">
+        <%= @other_user.name.first.upcase %>
+      </div>
+
+      <div class="chat-user-info">
+
+        <strong>
+          <%= @other_user.name %>
+        </strong>
+
+        <span>
+          Online
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- Messages -->
+
+    <div class="messages-container"
+         data-current-user-id="<%= current_user.id %>">
+
+      <% if @messages.any? %>
+
+        <% @messages.each do |message| %>
+
+          <div class="message-row
+                      <%= message.user == current_user ? "my-message" : "other-message" %>">
+
+            <div class="message-bubble">
+
+              <div class="message-content">
+                <%= message.content %>
+              </div>
+
+              <small>
+                <%= message.created_at.strftime("%I:%M %p") %>
+              </small>
+
+            </div>
+
+          </div>
+
+        <% end %>
+
+      <% else %>
+
+        <div class="empty-chat">
+
+          <div class="empty-chat-icon">
+            👋
+          </div>
+
+          <h3>
+            Start the conversation
+          </h3>
+
+          <p>
+            Send a message to <%= @other_user.name %>.
+          </p>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+    <!-- Message Input -->
+
+    <div class="message-input-area">
+
+      <%= form_with model: [@conversation, @message],
+                    class: "message-form" do |form| %>
+
+        <%= form.text_field :content,
+              placeholder: "Write a message...",
+              autocomplete: "off",
+              class: "message-input" %>
+
+        <button type="button"
+                class="emoji-button">
+          😊
+        </button>
+
+        <%= form.submit "➤",
+              class: "send-button" %>
+
+      <% end %>
+
+    </div>
+
+  </div>
+
+</div>

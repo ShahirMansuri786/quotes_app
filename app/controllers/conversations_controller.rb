@@ -16,6 +16,23 @@ class ConversationsController < ApplicationController
   def show
     @conversation = current_user.conversations.find(params[:id])
 
+    # Mark all unread messages from other users in this conversation as read
+    updated = @conversation.messages
+                           .where.not(user_id: current_user.id)
+                           .where(read: false)
+                           .update_all(read: true)
+
+    if updated > 0
+      ActionCable.server.broadcast(
+        "user_#{current_user.id}",
+        {
+          type: "unread_count",
+          unread_count: current_user.unread_messages_count,
+          conversation_id: @conversation.id
+        }
+      )
+    end
+
     @messages = @conversation.messages
                              .includes(:user)
                              .order(:created_at)

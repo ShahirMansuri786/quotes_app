@@ -14,4 +14,21 @@ class User < ApplicationRecord
   has_many :messages, dependent: :destroy
 
   validates :name, presence: true
+
+  def unread_messages_count
+    Message.where(conversation_id: conversation_ids)
+           .where.not(user_id: id)
+           .where(read: false)
+           .count
+  end
+
+  def unread_messages_count_for(other_user)
+    conv_ids = conversation_ids & other_user.conversation_ids
+    return 0 if conv_ids.empty?
+
+    Message.where(conversation_id: conv_ids)
+           .where(user_id: other_user.id)
+           .where(read: false)
+           .count
+  end
 end

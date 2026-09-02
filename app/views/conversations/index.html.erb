@@ -13,10 +13,19 @@
 
       <% @users.each do |user| %>
 
-        <div class="user-row">
+        <div class="user-row" data-user-row-id="<%= user.id %>">
 
-          <div class="user-avatar">
-            <%= user.name.first.upcase %>
+          <div class="user-avatar-wrapper">
+            <div class="user-avatar">
+              <%= user.name.first.upcase %>
+            </div>
+
+            <% user_unread = current_user.unread_messages_count_for(user) %>
+            <% if user_unread > 0 %>
+              <span class="user-unread-badge">
+                <%= user_unread %>
+              </span>
+            <% end %>
           </div>
 
           <div class="user-info">

@@ -1,6 +1,7 @@
 <div class="chat-page"
      data-controller="chat"
-     data-conversation-id="<%= @conversation.id %>">
+     data-conversation-id="<%= @conversation.id %>"
+     data-current-user-id="<%= current_user.id %>">
 
   <div class="chat-container">
 
@@ -22,7 +23,9 @@
           <%= @other_user.name %>
         </strong>
 
-        <span>
+        <span class="user-status online"
+              data-chat-target="status"
+              id="user-status-<%= @other_user.id %>">
           Online
         </span>
 
@@ -87,12 +90,17 @@
     <div class="message-input-area">
 
       <%= form_with model: [@conversation, @message],
-                    class: "message-form" do |form| %>
+                    class: "message-form",
+                    data: { action: "submit->chat#handleSubmit" } do |form| %>
 
         <%= form.text_field :content,
               placeholder: "Write a message...",
               autocomplete: "off",
-              class: "message-input" %>
+              class: "message-input",
+              data: {
+                chat_target: "input",
+                action: "input->chat#handleInput"
+              } %>
 
         <button type="button"
                 class="emoji-button">

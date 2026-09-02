@@ -21,7 +21,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-current-user-id="<%= current_user.id if user_signed_in? %>">
 
     <header class="navbar">
 
@@ -34,10 +34,13 @@
           <span>
             Hi, <%= current_user.name %>
           </span>
-          <%= link_to "💬",
-              conversations_path,
-              class: "chat-icon",
-              title: "Messages" %>
+          <%= link_to conversations_path, class: "chat-icon-link", title: "Messages" do %>
+            <span class="chat-icon">💬</span>
+            <% unread_count = current_user.unread_messages_count %>
+            <% if unread_count > 0 %>
+              <span class="unread-badge"><%= unread_count %></span>
+            <% end %>
+          <% end %>
 
           <%= link_to "Write Quote",
                       new_quote_path,

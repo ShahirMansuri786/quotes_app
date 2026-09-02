@@ -290,15 +290,57 @@ a {
   }
 }
 
-.chat-icon {
-  font-size: 24px;
-  padding: 8px;
-  border-radius: 50%;
-  transition: 0.2s;
+.chat-icon-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
-.chat-icon:hover {
+.chat-icon {
+  font-size: 24px;
+  padding: 6px;
+  border-radius: 50%;
+  transition: 0.2s;
+  display: inline-block;
+  line-height: 1;
+}
+
+.chat-icon-link:hover .chat-icon {
   background: #f3f4f6;
+}
+
+.unread-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 9px;
+  text-align: center;
+  padding: 0 4px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+  pointer-events: none;
+}
+
+.conversation-unread-badge {
+  background-color: #ef4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-right: 12px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
 }
 
 .messages-page {
@@ -337,6 +379,12 @@ a {
   border-bottom: none;
 }
 
+.user-avatar-wrapper {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
 .user-avatar {
   width: 48px;
   height: 48px;
@@ -349,6 +397,30 @@ a {
   font-weight: bold;
   font-size: 18px;
   flex-shrink: 0;
+}
+
+.user-unread-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 19px;
+  height: 19px;
+  line-height: 15px;
+  border-radius: 10px;
+  text-align: center;
+  padding: 0 4px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.45);
+  border: 2px solid white;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: badge-pop 0.3s ease;
 }
 
 .user-info {
@@ -407,9 +479,20 @@ a {
   gap: 3px;
 }
 
-.chat-user-info span {
-  color: #22c55e;
+.chat-user-info .user-status {
   font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.chat-user-info .user-status.online {
+  color: #22c55e;
+}
+
+.chat-user-info .user-status.typing {
+  color: #4f46e5;
+  font-style: italic;
+  font-weight: 600;
 }
 
 .messages-container {

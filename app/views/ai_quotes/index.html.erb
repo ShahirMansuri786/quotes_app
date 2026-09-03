@@ -139,9 +139,13 @@
 
         <div class="ai-actions">
 
-          <button
+         <button
             type="button"
             class="copy-quote-button"
+            onclick="
+              navigator.clipboard.writeText(this.dataset.quote);
+              this.innerText = '✅ Copied';
+            "
             data-quote="<%= @text_quote %>">
 
             📋 Copy Quote

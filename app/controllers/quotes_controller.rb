@@ -13,7 +13,7 @@ class QuotesController < ApplicationController
   end
 
   def new
-    @quote = Quote.new
+    @quote = Quote.new(content: params[:content])
   end
 
   def create

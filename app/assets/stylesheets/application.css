@@ -209,6 +209,12 @@ a {
   gap: 18px;
 }
 
+.navbar-user-greeting {
+  color: #000000;
+  font-size: 16px;
+  text-transform: capitalize;
+}
+
 .container {
   max-width: 1100px;
   margin: auto;
@@ -613,3 +619,587 @@ a {
   border-radius: 8px;
   margin: 20px 0;
 }
+
+/* ========================================
+   AI QUOTE PAGE
+======================================== */
+
+.ai-quote-page {
+  min-height: calc(100vh - 70px);
+  padding: 50px 20px;
+  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+}
+
+
+/* ========================================
+   MAIN CARD
+======================================== */
+
+.ai-quote-card {
+  width: 100%;
+  max-width: 850px;
+}
+
+
+/* ========================================
+   HEADER
+======================================== */
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.ai-icon {
+  width: 64px;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: linear-gradient(
+    135deg,
+    #6366f1,
+    #8b5cf6
+  );
+
+  font-size: 32px;
+
+  box-shadow:
+    0 10px 25px rgba(99, 102, 241, 0.25);
+}
+
+.ai-header-content h1 {
+  margin: 0;
+
+  font-size: 32px;
+  font-weight: 800;
+
+  background: linear-gradient(
+    90deg,
+    #4f46e5,
+    #9333ea
+  );
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ai-header-content p {
+  margin: 6px 0 0;
+
+  color: #6b7280;
+
+  font-size: 15px;
+}
+
+
+/* ========================================
+   GENERATOR
+======================================== */
+
+.ai-generator {
+  background: white;
+
+  padding: 30px;
+
+  border-radius: 20px;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow:
+    0 15px 40px rgba(15, 23, 42, 0.08);
+
+  margin-bottom: 25px;
+}
+
+.ai-form-title {
+  font-size: 16px;
+
+  font-weight: 700;
+
+  color: #1f2937;
+
+  margin-bottom: 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+/* ========================================
+   FORM
+======================================== */
+
+.ai-form {
+  display: flex;
+
+  gap: 12px;
+
+  align-items: stretch;
+}
+
+.ai-input-wrapper {
+  position: relative;
+
+  flex: 1;
+}
+
+.ai-topic-input {
+  width: 100%;
+
+  height: 52px;
+
+  padding: 0 48px 0 17px;
+
+  border: 2px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition: all 0.2s ease;
+
+  box-sizing: border-box;
+}
+
+.ai-topic-input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.ai-topic-input::placeholder {
+  color: #9ca3af;
+}
+
+.input-icon {
+  position: absolute;
+
+  right: 16px;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  font-size: 18px;
+
+  pointer-events: none;
+}
+
+
+/* ========================================
+   GENERATE BUTTON
+======================================== */
+
+.ai-generate-button {
+  height: 52px;
+
+  padding: 0 24px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #6366f1,
+    #8b5cf6
+  );
+
+  color: white;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ai-generate-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 20px rgba(99, 102, 241, 0.25);
+}
+
+.ai-generate-button:active {
+  transform: translateY(0);
+}
+
+
+/* ========================================
+   SUGGESTIONS
+======================================== */
+
+.ai-suggestions {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 18px;
+}
+
+.ai-suggestions span {
+  color: #9ca3af;
+
+  font-size: 13px;
+
+  margin-right: 3px;
+}
+
+.ai-suggestions button {
+  border: 1px solid #e5e7eb;
+
+  background: #f9fafb;
+
+  color: #4b5563;
+
+  border-radius: 20px;
+
+  padding: 6px 12px;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.ai-suggestions button:hover {
+  background: #eef2ff;
+
+  border-color: #c7d2fe;
+
+  color: #4f46e5;
+}
+
+
+/* ========================================
+   AI RESULT
+======================================== */
+
+.ai-result {
+  background: white;
+
+  border-radius: 20px;
+
+  border: 1px solid #e5e7eb;
+
+  padding: 30px;
+
+  box-shadow:
+    0 15px 40px rgba(15, 23, 42, 0.08);
+
+  animation: quoteAppear 0.4s ease;
+}
+
+@keyframes quoteAppear {
+  from {
+    opacity: 0;
+
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+
+/* ========================================
+   RESULT HEADER
+======================================== */
+
+.ai-result-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+}
+
+.ai-result-label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  color: #374151;
+}
+
+.ai-result-icon {
+  width: 34px;
+
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #eef2ff;
+}
+
+.ai-result-badge {
+  background: #f3e8ff;
+
+  color: #7e22ce;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+
+/* ========================================
+   QUOTE
+======================================== */
+
+.generated-quote {
+  position: relative;
+
+  background: linear-gradient(
+    135deg,
+    #f8f7ff,
+    #faf5ff
+  );
+
+  border-radius: 16px;
+
+  padding: 35px 40px;
+
+  color: #1f2937;
+
+  font-size: 22px;
+
+  line-height: 1.6;
+
+  font-weight: 600;
+
+  text-align: center;
+}
+
+.quote-mark {
+  color: #8b5cf6;
+
+  font-size: 40px;
+
+  font-weight: 800;
+
+  vertical-align: middle;
+}
+
+
+/* ========================================
+   ACTION BUTTONS
+======================================== */
+
+.ai-actions {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  margin-top: 25px;
+}
+
+.copy-quote-button,
+.post-ai-quote-button {
+  height: 44px;
+
+  padding: 0 18px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  text-decoration: none;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.copy-quote-button {
+  border: 1px solid #d1d5db;
+
+  background: white;
+
+  color: #374151;
+}
+
+.copy-quote-button:hover {
+  background: #f9fafb;
+
+  transform: translateY(-1px);
+}
+
+.post-ai-quote-button {
+  border: none;
+
+  background: #4f46e5;
+
+  color: white;
+}
+
+.post-ai-quote-button:hover {
+  background: #4338ca;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 15px rgba(79, 70, 229, 0.2);
+}
+
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 650px) {
+
+  .ai-quote-page {
+    padding: 25px 15px;
+  }
+
+  .ai-header {
+    align-items: flex-start;
+  }
+
+  .ai-icon {
+    width: 50px;
+
+    height: 50px;
+
+    font-size: 24px;
+  }
+
+  .ai-header-content h1 {
+    font-size: 24px;
+  }
+
+  .ai-header-content p {
+    font-size: 13px;
+  }
+
+  .ai-generator {
+    padding: 20px;
+  }
+
+  .ai-form {
+    flex-direction: column;
+  }
+
+  .ai-generate-button {
+    width: 100%;
+  }
+
+  .generated-quote {
+    padding: 25px 20px;
+
+    font-size: 18px;
+  }
+
+  .ai-actions {
+    flex-direction: column;
+  }
+
+  .copy-quote-button,
+  .post-ai-quote-button {
+    width: 100%;
+  }
+}
+
+
+.ai-model-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .ai-model-label {
+    font-size: 11px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .ai-model-dropdown {
+    height: 28px;
+    min-width: 82px;
+
+    padding: 0 6px;
+
+    border: 1px solid #7c5cff;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #444444;
+
+    font-size: 11px;
+    font-weight: 500;
+
+    cursor: pointer;
+    outline: none;
+
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease;
+  }
+
+  .ai-model-dropdown:hover {
+    border-color: #6246e5;
+  }
+
+  .ai-model-dropdown:focus {
+    border-color: #6246e5;
+    box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.12);
+  }

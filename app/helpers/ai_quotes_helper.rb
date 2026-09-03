@@ -1,0 +1,2 @@
+module AiQuotesHelper
+end

@@ -31,9 +31,10 @@
 
         <% if user_signed_in? %>
 
-          <span>
-            Hi, <%= current_user.name %>
+          <span class="navbar-user-greeting">
+            <%= current_user.name.capitalize %>
           </span>
+
           <%= link_to conversations_path, class: "chat-icon-link", title: "Messages" do %>
             <span class="chat-icon">💬</span>
             <% unread_count = current_user.unread_messages_count %>
@@ -42,9 +43,9 @@
             <% end %>
           <% end %>
 
-          <%= link_to "Write Quote",
-                      new_quote_path,
-                      class: "btn btn-primary" %>
+          <%= link_to "🤖 AI Quotes",
+            ai_quotes_path,
+            class: "nav-link" %>
 
           <%= button_to "Logout",
                         destroy_user_session_path,

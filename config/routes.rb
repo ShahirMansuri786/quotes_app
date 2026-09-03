@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "ai_quotes/index"
   get "messages/create"
   # get "conversations/index"
   # get "conversations/show"
@@ -16,5 +17,11 @@ Rails.application.routes.draw do
   end
   resources :conversations, only: [:index, :show, :create] do
     resources :messages, only: [:create]
+  end
+
+  resources :ai_quotes, only: [:index] do
+    collection do
+      post :generate
+    end
   end
 end

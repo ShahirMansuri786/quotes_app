@@ -1,0 +1,176 @@
+<div class="ai-quote-page">
+
+  <div class="ai-quote-card">
+
+    <!-- Header -->
+    <div class="ai-header">
+
+      <div class="ai-icon">
+        🤖
+      </div>
+
+      <div class="ai-header-content">
+        <h1>AI Quote Assistant</h1>
+
+        <p>
+          Need some inspiration? Tell AI what you're thinking about
+          and get a quote instantly.
+        </p>
+      </div>
+
+    </div>
+
+
+    <!-- Generator Form -->
+    <div class="ai-generator">
+
+      <div class="ai-form-title">
+        <span>✨</span>
+        What kind of quote do you want?
+      </div>
+
+      <%= form_with url: generate_ai_quotes_path,
+                    method: :post,
+                    data: { turbo: false },
+                    id: "ai-quote-form",
+                    class: "ai-form" do |form| %>
+
+        <div class="ai-input-wrapper">
+
+          <%= form.text_field :topic,
+                placeholder: "e.g. never give up, success, friendship...",
+                class: "ai-topic-input",
+                autocomplete: "off" %>
+
+          <div class="input-icon">
+            ✨
+          </div>
+
+        </div>
+
+        <%= form.submit "✨ Generate Quote",
+              class: "ai-generate-button" %>
+
+      <% end %>
+
+
+      <div class="ai-suggestions">
+
+        <span>Try:</span>
+
+        <button type="button"
+                onclick="setAiTopic('Never give up')">
+          💪 Never give up
+        </button>
+
+        <button type="button"
+                onclick="setAiTopic('Success')">
+          🚀 Success
+        </button>
+
+        <button type="button"
+                onclick="setAiTopic('Life')">
+          🌱 Life
+        </button>
+
+        <button type="button"
+                onclick="setAiTopic('Friendship')">
+          ❤️ Friendship
+        </button>
+
+
+        <!-- AI Model Dropdown -->
+        <div class="ai-model-selector">
+
+          <span class="ai-model-label">
+            🤖 Model
+          </span>
+
+          <select
+            name="model"
+            form="ai-quote-form"
+            class="ai-model-dropdown">
+
+            <option value="ollama" selected>
+              🦙 Ollama
+            </option>
+
+            <option value="gemini">
+              ✨ Gemini
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- Generated Quote -->
+
+    <% if @text_quote.present? %>
+
+      <div class="ai-result">
+
+        <div class="ai-result-header">
+
+          <div class="ai-result-label">
+            <span class="ai-result-icon">🤖</span>
+            AI Generated Quote
+          </div>
+
+          <span class="ai-result-badge">
+            ✨ AI
+          </span>
+
+        </div>
+
+
+        <div class="generated-quote">
+          <span class="quote-mark">“</span>
+
+          <%= @text_quote %>
+
+          <span class="quote-mark">”</span>
+        </div>
+
+
+        <div class="ai-actions">
+
+          <button
+            type="button"
+            class="copy-quote-button"
+            data-quote="<%= @text_quote %>">
+
+            📋 Copy Quote
+
+          </button>
+
+
+          <%= link_to "✍️ Post Quote",
+                new_quote_path(content: @text_quote),
+                class: "post-ai-quote-button" %>
+
+        </div>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</div>
+
+
+<script>
+  function setAiTopic(topic) {
+    const input = document.querySelector(".ai-topic-input")
+
+    if (input) {
+      input.value = topic
+      input.focus()
+    }
+  }
+</script>

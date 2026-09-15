@@ -35,6 +35,14 @@ export function subscribeToChat(conversationId, currentUserId) {
 
         if (data.type === "typing") {
           handleTypingIndicator(data)
+        } else if (
+          data.type === "video_call_request" ||
+          data.type === "video_call_accepted" ||
+          data.type === "video_call_rejected" ||
+          data.type === "video_call_ended" ||
+          data.type === "video_signal"
+        ) {
+          window.dispatchEvent(new CustomEvent("chat:video-call-event", { detail: data }))
         } else {
           // Reset typing indicator if incoming message is from the other user
           handleTypingIndicator({ user_id: data.user_id, is_typing: false })
@@ -65,6 +73,50 @@ export function sendTyping(userId, isTyping) {
     chatSubscription.perform("typing", {
       user_id: userId,
       is_typing: isTyping
+    })
+  }
+}
+
+export function startVideoCall(callerId, callerName) {
+  if (chatSubscription) {
+    chatSubscription.perform("start_video_call", {
+      caller_id: callerId,
+      caller_name: callerName
+    })
+  }
+}
+
+export function acceptVideoCall(userId) {
+  if (chatSubscription) {
+    chatSubscription.perform("accept_video_call", {
+      user_id: userId
+    })
+  }
+}
+
+export function rejectVideoCall(userId) {
+  if (chatSubscription) {
+    chatSubscription.perform("reject_video_call", {
+      user_id: userId
+    })
+  }
+}
+
+export function endVideoCall(userId) {
+  if (chatSubscription) {
+    chatSubscription.perform("end_video_call", {
+      user_id: userId
+    })
+  }
+}
+
+export function sendVideoSignal(signalType, signalData, fromUserId, targetUserId) {
+  if (chatSubscription) {
+    chatSubscription.perform("video_signal", {
+      signal_type: signalType,
+      signal_data: signalData,
+      from_user_id: fromUserId,
+      target_user_id: targetUserId
     })
   }
 }

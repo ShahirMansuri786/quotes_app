@@ -45,10 +45,123 @@ export function setupUserChannel() {
         if (data.type === "unread_count") {
           updateNavbarBadge(data.unread_count)
           updateConversationRowBadge(data)
+        } else if (
+          data.type === "video_call_request" ||
+          data.type === "video_call_accepted" ||
+          data.type === "video_call_rejected" ||
+          data.type === "video_call_ended" ||
+          data.type === "video_signal"
+        ) {
+          const activeChat = document.querySelector(".chat-page")
+          const activeChatConversationId = activeChat ? activeChat.dataset.conversationId : null
+
+          // If already on the active conversation page, ChatChannel handles everything!
+          // Do not show global modal and do not dispatch duplicate events.
+          if (activeChatConversationId && String(activeChatConversationId) === String(data.conversation_id)) {
+            return
+          }
+
+          handleGlobalVideoCallEvent(data)
         }
       }
     }
   )
+}
+
+let globalRingtoneInterval = null
+let globalAudioCtx = null
+
+function handleGlobalVideoCallEvent(data) {
+  const activeChat = document.querySelector(".chat-page")
+  const activeChatConversationId = activeChat ? activeChat.dataset.conversationId : null
+
+  // If already on the active conversation page, let that page's controller handle it
+  if (activeChatConversationId && String(activeChatConversationId) === String(data.conversation_id)) {
+    return
+  }
+
+  const modal = document.getElementById("global-video-call-modal")
+  if (!modal) return
+
+  if (data.type === "video_call_request") {
+    const currentUserId = document.body ? document.body.dataset.currentUserId : null
+    if (String(data.caller_id) === String(currentUserId)) return
+
+    const callerName = data.caller_name || "Someone"
+    const callerInitial = callerName.charAt(0).toUpperCase()
+
+    const nameEl = document.getElementById("global-caller-name")
+    const avatarEl = document.getElementById("global-call-avatar")
+    const acceptBtn = document.getElementById("global-call-accept-btn")
+    const declineBtn = document.getElementById("global-call-decline-btn")
+
+    if (nameEl) nameEl.textContent = callerName
+    if (avatarEl) avatarEl.textContent = callerInitial
+
+    modal.style.display = "flex"
+    playGlobalRingtone()
+
+    if (declineBtn) {
+      declineBtn.onclick = () => {
+        stopGlobalRingtone()
+        modal.style.display = "none"
+        if (userSubscription) {
+          userSubscription.perform("reject_video_call", {
+            user_id: currentUserId,
+            conversation_id: data.conversation_id
+          })
+        }
+      }
+    }
+
+    if (acceptBtn) {
+      acceptBtn.onclick = () => {
+        stopGlobalRingtone()
+        modal.style.display = "none"
+        window.location.href = `/conversations/${data.conversation_id}?auto_accept=true`
+      }
+    }
+  } else if (data.type === "video_call_rejected" || data.type === "video_call_ended") {
+    stopGlobalRingtone()
+    modal.style.display = "none"
+  }
+}
+
+function playGlobalRingtone() {
+  stopGlobalRingtone()
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext
+    if (!AudioCtx) return
+    globalAudioCtx = new AudioCtx()
+
+    const playBeep = () => {
+      if (!globalAudioCtx || globalAudioCtx.state === "closed") return
+      const osc = globalAudioCtx.createOscillator()
+      const gain = globalAudioCtx.createGain()
+      osc.type = "sine"
+      osc.frequency.setValueAtTime(440, globalAudioCtx.currentTime)
+      gain.gain.setValueAtTime(0.15, globalAudioCtx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 0.6)
+      osc.connect(gain)
+      gain.connect(globalAudioCtx.destination)
+      osc.start()
+      osc.stop(globalAudioCtx.currentTime + 0.6)
+    }
+
+    playBeep()
+    globalRingtoneInterval = setInterval(playBeep, 2000)
+  } catch (e) {}
+}
+
+function stopGlobalRingtone() {
+  if (globalRingtoneInterval) {
+    clearInterval(globalRingtoneInterval)
+    globalRingtoneInterval = null
+  }
+  if (globalAudioCtx) {
+    try { globalAudioCtx.close() } catch (e) {}
+    globalAudioCtx = null
+  }
 }
 
 function updateNavbarBadge(count) {
@@ -95,4 +208,5 @@ function updateConversationRowBadge(data) {
 
 document.addEventListener("turbo:load", setupUserChannel)
 document.addEventListener("DOMContentLoaded", setupUserChannel)
+
 

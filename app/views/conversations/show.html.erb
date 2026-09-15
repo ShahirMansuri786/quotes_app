@@ -1,7 +1,10 @@
 <div class="chat-page"
-     data-controller="chat"
+     data-controller="chat video-call"
      data-conversation-id="<%= @conversation.id %>"
-     data-current-user-id="<%= current_user.id %>">
+     data-current-user-id="<%= current_user.id %>"
+     data-current-user-name="<%= current_user.name %>"
+     data-other-user-id="<%= @other_user.id %>"
+     data-other-user-name="<%= @other_user.name %>">
 
   <div class="chat-container">
 
@@ -30,6 +33,19 @@
         </span>
 
       </div>
+
+      <button type="button"
+        class="video-call-header-btn"
+        data-action="click->video-call#startCall"
+        title="Start Video Call">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="white">
+          <path d="M17 10.5V7c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-3.5l5 3v-7l-5 3z"/>
+        </svg>
+      </button>
 
     </div>
 
@@ -114,6 +130,133 @@
 
     </div>
 
+  </div>
+
+  <!-- Video Call Modal & Overlays -->
+  <div class="video-call-modal-backdrop"
+       data-video-call-target="modal"
+       style="display: none;">
+
+    <div class="video-call-container">
+
+      <!-- Incoming Call Card -->
+      <div class="video-call-card incoming-card"
+           data-video-call-target="incomingModal"
+           style="display: none;">
+        <div class="call-avatar pulsing" data-video-call-target="incomingAvatar">
+          <%= @other_user.name.first.upcase %>
+        </div>
+        <h3 class="caller-title">
+          Incoming Video Call
+        </h3>
+        <p class="caller-subtitle">
+          <span data-video-call-target="incomingCallerName"><%= @other_user.name %></span> is calling you...
+        </p>
+        <div class="call-actions">
+          <button type="button"
+                  class="btn-call accept-btn"
+                  data-action="click->video-call#acceptIncomingCall">
+            📞 Accept
+          </button>
+          <button type="button"
+                  class="btn-call reject-btn"
+                  data-action="click->video-call#rejectIncomingCall">
+            ❌ Decline
+          </button>
+        </div>
+      </div>
+
+      <!-- Outgoing Call Card -->
+      <div class="video-call-card outgoing-card"
+           data-video-call-target="outgoingModal"
+           style="display: none;">
+        <div class="call-avatar pulsing" data-video-call-target="outgoingAvatar">
+          <%= @other_user.name.first.upcase %>
+        </div>
+        <h3 class="caller-title">
+          Calling...
+        </h3>
+        <p class="caller-subtitle">
+          Waiting for <span data-video-call-target="callerName"><%= @other_user.name %></span> to answer...
+        </p>
+        <div class="call-actions">
+          <button type="button"
+                  class="btn-call end-btn"
+                  data-action="click->video-call#endCall">
+            ❌ Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Video Call View -->
+      <div class="video-call-active-window"
+           data-video-call-target="activeModal"
+           style="display: none;">
+
+        <div class="video-call-header-overlay">
+          <div class="status-info">
+            <span class="status-badge" data-video-call-target="callStatus">Connecting...</span>
+            <span class="timer-badge" data-video-call-target="callTimer">00:00</span>
+          </div>
+        </div>
+
+        <!-- Video Feeds -->
+        <div class="video-feed-wrapper">
+          <video data-video-call-target="remoteVideo"
+                 autoplay
+                 playsinline
+                 class="remote-video-feed"></video>
+
+          <!-- Remote Status Indicators -->
+          <div class="remote-status-overlay">
+            <span class="remote-badge remote-muted-badge"
+                  data-video-call-target="remoteMutedBadge"
+                  style="display: none;">
+              🎙️ Muted
+            </span>
+          </div>
+
+          <!-- Remote Camera Off Overlay -->
+          <div class="remote-camera-off-overlay"
+               data-video-call-target="remoteCameraOffOverlay"
+               style="display: none;">
+            <div class="call-avatar">
+              <span data-video-call-target="remoteAvatarInitial"><%= @other_user.name.first.upcase %></span>
+            </div>
+            <p>Camera is turned off</p>
+          </div>
+
+          <video data-video-call-target="localVideo"
+                 autoplay
+                 playsinline
+                 muted
+                 class="local-video-feed"></video>
+        </div>
+
+        <!-- Control Bar -->
+        <div class="video-controls-bar">
+          <button type="button"
+                  class="control-btn toggle-audio"
+                  data-video-call-target="audioBtn"
+                  data-action="click->video-call#toggleAudio">
+            🎙️ On
+          </button>
+          <button type="button"
+                  class="control-btn toggle-video"
+                  data-video-call-target="videoBtn"
+                  data-action="click->video-call#toggleVideo">
+            📹 On
+          </button>
+          <button type="button"
+                  class="control-btn end-call-btn"
+                  data-action="click->video-call#endCall">
+            📞 End Call
+          </button>
+        </div>
+
+      </div>
+
+    </div>
   </div>
 
 </div>

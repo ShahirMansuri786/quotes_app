@@ -71,10 +71,33 @@
 
     <% if user_signed_in? %>
 
+      <div id="global-video-call-modal" class="video-call-modal-backdrop" style="display: none;">
+        <div class="video-call-container">
+          <div class="video-call-card incoming-card">
+            <div class="call-avatar pulsing" id="global-call-avatar">
+              U
+            </div>
+            <h3 class="caller-title">
+              Incoming Video Call
+            </h3>
+            <p class="caller-subtitle">
+              <span id="global-caller-name">Someone</span> is calling you...
+            </p>
+            <div class="call-actions">
+              <button type="button" class="btn-call accept-btn" id="global-call-accept-btn">
+                📞 Accept
+              </button>
+              <button type="button" class="btn-call reject-btn" id="global-call-decline-btn">
+                ❌ Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <% unread_notifications = current_user.notifications.unread.order(created_at: :desc) %>
 
       <% if unread_notifications.any? %>
-        
 
         <div id="notification-popup" class="notification-popup">
 
@@ -102,7 +125,6 @@
         </div>
 
       <% end %>
-      
 
     <% end %>
 

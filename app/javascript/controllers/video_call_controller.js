@@ -54,9 +54,15 @@ export default class extends Controller {
 
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.get("auto_accept") === "true") {
-      // Remove ?auto_accept=true from URL immediately so page refresh
+      const returnTo = urlParams.get("return_to")
+      if (returnTo) {
+        this.returnToUrl = decodeURIComponent(returnTo)
+      }
+
+      // Remove ?auto_accept=true and return_to from URL immediately so page refresh
       // does not re-trigger auto-accept
       urlParams.delete("auto_accept")
+      urlParams.delete("return_to")
       const newSearch = urlParams.toString()
       const newUrl = window.location.pathname + (newSearch ? "?" + newSearch : "")
       history.replaceState(null, "", newUrl)
@@ -498,6 +504,16 @@ export default class extends Controller {
     }
 
     this.hideModal()
+
+    if (this.returnToUrl) {
+      const target = this.returnToUrl
+      this.returnToUrl = null
+      if (target !== window.location.pathname) {
+        setTimeout(() => {
+          window.location.href = target
+        }, 500)
+      }
+    }
   }
 }
 

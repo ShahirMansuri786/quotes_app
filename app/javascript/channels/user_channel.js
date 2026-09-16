@@ -118,7 +118,9 @@ function handleGlobalVideoCallEvent(data) {
       acceptBtn.onclick = () => {
         stopGlobalRingtone()
         modal.style.display = "none"
-        window.location.href = `/conversations/${data.conversation_id}?auto_accept=true`
+        const currentPath = window.location.pathname + window.location.search
+        const returnParam = encodeURIComponent(currentPath)
+        window.location.href = `/conversations/${data.conversation_id}?auto_accept=true&return_to=${returnParam}`
       }
     }
   } else if (data.type === "video_call_rejected" || data.type === "video_call_ended") {

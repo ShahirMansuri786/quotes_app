@@ -196,17 +196,60 @@ function addMessageToChat(message) {
     isMine ? "my-message" : "other-message"
   }`
 
-  row.innerHTML = `
-    <div class="message-bubble">
+  let attachmentsHtml = ""
+  if (message.attachments && message.attachments.length > 0) {
+    const isMultiple = message.attachments.length > 1
+    let itemsHtml = ""
 
+    message.attachments.forEach((att) => {
+      const url = att.url || ""
+      const filename = att.filename || "file"
+      const isImg = att.is_image || (att.content_type && att.content_type.startsWith("image/"))
+      const isVid = att.is_video || (att.content_type && att.content_type.startsWith("video/"))
+
+      if (isImg) {
+        itemsHtml += `
+          <img src="${escapeHtml(url)}"
+               alt="${escapeHtml(filename)}"
+               class="chat-media-image"
+               loading="lazy"
+               data-action="click->chat#openLightbox"
+               data-full-src="${escapeHtml(url)}" />
+        `
+      } else if (isVid) {
+        itemsHtml += `
+          <video controls
+                 playsinline
+                 preload="metadata"
+                 class="chat-media-video"
+                 src="${escapeHtml(url)}">
+            Your browser does not support video.
+          </video>
+        `
+      }
+    })
+
+    if (itemsHtml.length > 0) {
+      attachmentsHtml = `<div class="message-attachments ${isMultiple ? "multiple" : ""}">${itemsHtml}</div>`
+    }
+  }
+
+  let contentHtml = ""
+  if (message.content && message.content.trim().length > 0) {
+    contentHtml = `
       <div class="message-content">
         ${escapeHtml(message.content)}
       </div>
+    `
+  }
 
+  row.innerHTML = `
+    <div class="message-bubble">
+      ${attachmentsHtml}
+      ${contentHtml}
       <small>
-        ${message.created_at}
+        ${escapeHtml(message.created_at || "")}
       </small>
-
     </div>
   `
 
@@ -217,6 +260,7 @@ function addMessageToChat(message) {
 }
 
 function escapeHtml(text) {
+  if (!text) return ""
   const div = document.createElement("div")
 
   div.textContent = text

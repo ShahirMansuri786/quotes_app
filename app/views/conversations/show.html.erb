@@ -64,9 +64,34 @@
 
             <div class="message-bubble">
 
-              <div class="message-content">
-                <%= message.content %>
-              </div>
+              <% if message.attachments.attached? %>
+                <div class="message-attachments <%= "multiple" if message.attachments.count > 1 %>">
+                  <% message.attachments.each do |att| %>
+                    <% if att.image? %>
+                      <%= image_tag att,
+                            class: "chat-media-image",
+                            data: {
+                              action: "click->chat#openLightbox",
+                              full_src: url_for(att)
+                            },
+                            alt: att.filename.to_s,
+                            loading: "lazy" %>
+                    <% elsif att.video? %>
+                      <%= video_tag url_for(att),
+                            controls: true,
+                            playsinline: true,
+                            preload: "metadata",
+                            class: "chat-media-video" %>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <% if message.content.present? %>
+                <div class="message-content">
+                  <%= message.content %>
+                </div>
+              <% end %>
 
               <small>
                 <%= message.created_at.strftime("%I:%M %p") %>
@@ -105,9 +130,62 @@
 
     <div class="message-input-area">
 
+      <!-- Media Previews Strip -->
+      <div class="media-preview-container" data-chat-target="mediaPreview" style="display: none;">
+        <div class="preview-scroll-strip" data-chat-target="previewStrip"></div>
+      </div>
+
+      <!-- Multi-Category Emoji Picker Popup -->
+      <div class="emoji-picker-container" data-chat-target="emojiPicker" style="display: none;">
+        <div class="emoji-picker-header">
+          <input type="text"
+                 class="emoji-search-input"
+                 placeholder="Search emojis..."
+                 data-chat-target="emojiSearch"
+                 data-action="input->chat#filterEmojis" />
+          <button type="button"
+                  class="emoji-picker-close-btn"
+                  data-action="click->chat#closeEmojiPicker">✕</button>
+        </div>
+        <div class="emoji-category-tabs">
+          <button type="button" class="category-tab active" data-action="click->chat#switchCategory" data-category="smileys" title="Smileys & Emotion">😀</button>
+          <button type="button" class="category-tab" data-action="click->chat#switchCategory" data-category="gestures" title="People & Gestures">👍</button>
+          <button type="button" class="category-tab" data-action="click->chat#switchCategory" data-category="hearts" title="Hearts & Love">❤️</button>
+          <button type="button" class="category-tab" data-action="click->chat#switchCategory" data-category="celebration" title="Celebration & Fun">🎉</button>
+          <button type="button" class="category-tab" data-action="click->chat#switchCategory" data-category="objects" title="Objects & Symbols">💡</button>
+        </div>
+        <div class="emoji-grid-wrapper" data-chat-target="emojiGrid"></div>
+      </div>
+
       <%= form_with model: [@conversation, @message],
                     class: "message-form",
-                    data: { action: "submit->chat#handleSubmit" } do |form| %>
+                    multipart: true,
+                    data: {
+                      action: "submit->chat#handleSubmit",
+                      chat_target: "form"
+                    } do |form| %>
+
+        <!-- Hidden File Input for Multiple Images / Videos -->
+        <%= form.file_field :attachments,
+              multiple: true,
+              accept: "image/*,video/*",
+              class: "hidden-file-input",
+              style: "display: none;",
+              data: {
+                chat_target: "fileInput",
+                action: "change->chat#handleFileSelect"
+              } %>
+
+        <!-- Attachment Button -->
+        <button type="button"
+                class="attach-button"
+                data-chat-target="attachBtn"
+                data-action="click->chat#triggerFileInput"
+                title="Attach Images or Videos">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V6H9v9.5a3 3 0 0 0 6 0V5a4 4 0 0 0-8 0v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
+          </svg>
+        </button>
 
         <%= form.text_field :content,
               placeholder: "Write a message...",
@@ -118,8 +196,12 @@
                 action: "input->chat#handleInput"
               } %>
 
+        <!-- Emoji Button -->
         <button type="button"
-                class="emoji-button">
+                class="emoji-button"
+                data-chat-target="emojiBtn"
+                data-action="click->chat#toggleEmojiPicker"
+                title="Choose Emoji">
           😊
         </button>
 
@@ -256,6 +338,20 @@
 
       </div>
 
+    </div>
+  <!-- Lightbox Modal for Full-Size Image Preview -->
+  <div class="chat-lightbox-modal"
+       data-chat-target="lightbox"
+       style="display: none;"
+       data-action="click->chat#closeLightboxOnBackdrop">
+    <div class="lightbox-content">
+      <button type="button"
+              class="lightbox-close-btn"
+              data-action="click->chat#closeLightbox">×</button>
+      <img src=""
+           alt="Full Preview"
+           class="lightbox-image"
+           data-chat-target="lightboxImg" />
     </div>
   </div>
 

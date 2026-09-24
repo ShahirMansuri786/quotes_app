@@ -87,16 +87,19 @@ function handleGlobalVideoCallEvent(data) {
     const currentUserId = document.body ? document.body.dataset.currentUserId : null
     if (String(data.caller_id) === String(currentUserId)) return
 
+    const callType = data.call_type || "video"
     const callerName = data.caller_name || "Someone"
     const callerInitial = callerName.charAt(0).toUpperCase()
 
     const nameEl = document.getElementById("global-caller-name")
     const avatarEl = document.getElementById("global-call-avatar")
+    const titleEl = document.getElementById("global-call-title")
     const acceptBtn = document.getElementById("global-call-accept-btn")
     const declineBtn = document.getElementById("global-call-decline-btn")
 
     if (nameEl) nameEl.textContent = callerName
     if (avatarEl) avatarEl.textContent = callerInitial
+    if (titleEl) titleEl.textContent = callType === "voice" ? "Incoming Voice Call" : "Incoming Video Call"
 
     modal.style.display = "flex"
     playGlobalRingtone()
@@ -120,7 +123,7 @@ function handleGlobalVideoCallEvent(data) {
         modal.style.display = "none"
         const currentPath = window.location.pathname + window.location.search
         const returnParam = encodeURIComponent(currentPath)
-        window.location.href = `/conversations/${data.conversation_id}?auto_accept=true&return_to=${returnParam}`
+        window.location.href = `/conversations/${data.conversation_id}?auto_accept=true&call_type=${callType}&return_to=${returnParam}`
       }
     }
   } else if (data.type === "video_call_rejected" || data.type === "video_call_ended") {

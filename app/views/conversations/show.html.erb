@@ -34,18 +34,32 @@
 
       </div>
 
-      <button type="button"
-        class="video-call-header-btn"
-        data-action="click->video-call#startCall"
-        title="Start Video Call">
-        <svg xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="white">
-          <path d="M17 10.5V7c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-3.5l5 3v-7l-5 3z"/>
-        </svg>
-      </button>
+      <div class="chat-header-actions">
+        <button type="button"
+          class="voice-call-header-btn"
+          data-action="click->video-call#startVoiceCall"
+          title="Start Voice Call">
+          <svg xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="white">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          </svg>
+        </button>
+        <button type="button"
+          class="video-call-header-btn"
+          data-action="click->video-call#startCall"
+          title="Start Video Call">
+          <svg xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="white">
+            <path d="M17 10.5V7c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-3.5l5 3v-7l-5 3z"/>
+          </svg>
+        </button>
+      </div>
 
     </div>
 
@@ -228,7 +242,7 @@
         <div class="call-avatar pulsing" data-video-call-target="incomingAvatar">
           <%= @other_user.name.first.upcase %>
         </div>
-        <h3 class="caller-title">
+        <h3 class="caller-title" data-video-call-target="incomingCallTitle">
           Incoming Video Call
         </h3>
         <p class="caller-subtitle">
@@ -255,7 +269,7 @@
         <div class="call-avatar pulsing" data-video-call-target="outgoingAvatar">
           <%= @other_user.name.first.upcase %>
         </div>
-        <h3 class="caller-title">
+        <h3 class="caller-title" data-video-call-target="outgoingCallTitle">
           Calling...
         </h3>
         <p class="caller-subtitle">
@@ -275,15 +289,32 @@
            data-video-call-target="activeModal"
            style="display: none;">
 
-        <div class="video-call-header-overlay">
+        <div class="video-call-header-overlay" data-video-call-target="headerOverlay">
           <div class="status-info">
             <span class="status-badge" data-video-call-target="callStatus">Connecting...</span>
             <span class="timer-badge" data-video-call-target="callTimer">00:00</span>
           </div>
         </div>
 
-        <!-- Video Feeds -->
-        <div class="video-feed-wrapper">
+        <!-- Voice Call Active Card (shown instead of video feeds during voice calls) -->
+        <div class="voice-call-active-card"
+             data-video-call-target="voiceCallCard"
+             style="display: none;">
+          <div class="voice-avatar-ring">
+            <div class="call-avatar voice-call-avatar">
+              <span data-video-call-target="remoteAvatarInitial"><%= @other_user.name.first.upcase %></span>
+            </div>
+          </div>
+          <h3 class="voice-caller-name"><%= @other_user.name %></h3>
+          <span class="status-badge voice-status" data-video-call-target="callStatus">Connecting...</span>
+          <span class="timer-badge voice-timer" data-video-call-target="callTimer">00:00</span>
+        </div>
+
+        <!-- Dedicated Remote Audio Player for Voice Calls -->
+        <audio data-video-call-target="remoteAudio" autoplay playsinline style="display: none;"></audio>
+
+        <!-- Video Feeds (hidden during voice calls) -->
+        <div class="video-feed-wrapper" data-video-call-target="videoFeedWrapper">
           <video data-video-call-target="remoteVideo"
                  autoplay
                  playsinline
@@ -303,7 +334,7 @@
                data-video-call-target="remoteCameraOffOverlay"
                style="display: none;">
             <div class="call-avatar">
-              <span data-video-call-target="remoteAvatarInitial"><%= @other_user.name.first.upcase %></span>
+              <span><%= @other_user.name.first.upcase %></span>
             </div>
             <p>Camera is turned off</p>
           </div>
@@ -323,12 +354,14 @@
                   data-action="click->video-call#toggleAudio">
             🎙️ On
           </button>
-          <button type="button"
-                  class="control-btn toggle-video"
-                  data-video-call-target="videoBtn"
-                  data-action="click->video-call#toggleVideo">
-            📹 On
-          </button>
+          <span data-video-call-target="videoBtnWrapper">
+            <button type="button"
+                    class="control-btn toggle-video"
+                    data-video-call-target="videoBtn"
+                    data-action="click->video-call#toggleVideo">
+              📹 On
+            </button>
+          </span>
           <button type="button"
                   class="control-btn end-call-btn"
                   data-action="click->video-call#endCall">

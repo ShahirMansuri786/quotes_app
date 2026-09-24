@@ -34,12 +34,14 @@ class ChatChannel < ApplicationCable::Channel
     conversation_id = params[:conversation_id]
     caller_id = data["caller_id"] || (current_user ? current_user.id : nil)
     caller_name = data["caller_name"] || (current_user ? current_user.name : "User")
+    call_type = data["call_type"] || "video"
 
     payload = {
       type: "video_call_request",
       conversation_id: conversation_id,
       caller_id: caller_id,
-      caller_name: caller_name
+      caller_name: caller_name,
+      call_type: call_type
     }
 
     ActionCable.server.broadcast("conversation_#{conversation_id}", payload)

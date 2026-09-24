@@ -32,7 +32,15 @@ export default class extends Controller {
     "callStatus",
     "callTimer",
     "audioBtn",
-    "videoBtn"
+    "videoBtn",
+    // Voice call specific targets
+    "voiceCallCard",
+    "videoFeedWrapper",
+    "videoBtnWrapper",
+    "incomingCallTitle",
+    "outgoingCallTitle",
+    "headerOverlay",
+    "remoteAudio"
   ]
 
   connect() {
@@ -48,6 +56,7 @@ export default class extends Controller {
     this.remoteStream = null
     this.isAudioMuted = false
     this.isVideoOff = false
+    this.currentCallType = "video" // 'video' | 'voice'
 
     this.boundHandleVideoCallEvent = this.handleVideoCallEvent.bind(this)
     window.addEventListener("chat:video-call-event", this.boundHandleVideoCallEvent)
@@ -59,10 +68,14 @@ export default class extends Controller {
         this.returnToUrl = decodeURIComponent(returnTo)
       }
 
-      // Remove ?auto_accept=true and return_to from URL immediately so page refresh
+      const callType = urlParams.get("call_type") || "video"
+      this.currentCallType = callType
+
+      // Remove ?auto_accept=true, return_to, and call_type from URL immediately so page refresh
       // does not re-trigger auto-accept
       urlParams.delete("auto_accept")
       urlParams.delete("return_to")
+      urlParams.delete("call_type")
       const newSearch = urlParams.toString()
       const newUrl = window.location.pathname + (newSearch ? "?" + newSearch : "")
       history.replaceState(null, "", newUrl)
@@ -81,9 +94,13 @@ export default class extends Controller {
   }
 
   // Action: Triggered by user clicking "Video Call" button in chat header
-  startCall() {
-    if (this.callState !== "idle") return
+  startCall(event) {
+    if (event) event.preventDefault()
+    if (this.callState !== "idle") {
+      this.cleanupCall()
+    }
 
+    this.currentCallType = "video"
     this.callState = "outgoing"
     this.showModal("outgoing")
     this.playRingtone("outgoing")
@@ -94,8 +111,36 @@ export default class extends Controller {
     if (this.hasOutgoingAvatarTarget) {
       this.outgoingAvatarTarget.textContent = (this.otherUserName || "U").charAt(0).toUpperCase()
     }
+    if (this.hasOutgoingCallTitleTarget) {
+      this.outgoingCallTitleTarget.textContent = "Calling..."
+    }
 
-    startVideoCall(this.currentUserId, this.currentUserName)
+    startVideoCall(this.currentUserId, this.currentUserName, "video")
+  }
+
+  // Action: Triggered by user clicking "Voice Call" button in chat header
+  startVoiceCall(event) {
+    if (event) event.preventDefault()
+    if (this.callState !== "idle") {
+      this.cleanupCall()
+    }
+
+    this.currentCallType = "voice"
+    this.callState = "outgoing"
+    this.showModal("outgoing")
+    this.playRingtone("outgoing")
+
+    if (this.hasCallerNameTarget) {
+      this.callerNameTarget.textContent = this.otherUserName
+    }
+    if (this.hasOutgoingAvatarTarget) {
+      this.outgoingAvatarTarget.textContent = (this.otherUserName || "U").charAt(0).toUpperCase()
+    }
+    if (this.hasOutgoingCallTitleTarget) {
+      this.outgoingCallTitleTarget.textContent = "Voice Calling..."
+    }
+
+    startVideoCall(this.currentUserId, this.currentUserName, "voice")
   }
 
   // Action: Triggered when receiver clicks "Accept Call"
@@ -200,9 +245,19 @@ export default class extends Controller {
             rejectVideoCall(this.currentUserId)
             return
           }
+
+          const callType = data.call_type || "video"
+          this.currentCallType = callType
           this.callState = "incoming"
           this.activeCallerId = data.caller_id
           this.showModal("incoming")
+
+          // Update incoming card title based on call type
+          if (this.hasIncomingCallTitleTarget) {
+            this.incomingCallTitleTarget.textContent =
+              callType === "voice" ? "Incoming Voice Call" : "Incoming Video Call"
+          }
+
           const callerName = data.caller_name || this.otherUserName
           if (this.hasIncomingCallerNameTarget) {
             this.incomingCallerNameTarget.textContent = callerName
@@ -238,14 +293,18 @@ export default class extends Controller {
         if (String(data.user_id) !== String(this.currentUserId)) {
           this.stopRingtone()
           this.showStatusNotification("Call Declined")
-          setTimeout(() => this.cleanupCall(), 1800)
+          if (this.callEndTimeout) clearTimeout(this.callEndTimeout)
+          this.callEndTimeout = setTimeout(() => this.cleanupCall(), 1500)
         }
         break
 
       case "video_call_ended":
-        this.stopRingtone()
-        this.showStatusNotification("Call Ended")
-        setTimeout(() => this.cleanupCall(), 1200)
+        if (this.callState !== "idle") {
+          this.stopRingtone()
+          this.showStatusNotification("Call Ended")
+          if (this.callEndTimeout) clearTimeout(this.callEndTimeout)
+          this.callEndTimeout = setTimeout(() => this.cleanupCall(), 1000)
+        }
         break
 
       case "video_signal":
@@ -257,14 +316,22 @@ export default class extends Controller {
   }
 
   async handleSignalData(type, signalData, fromUserId) {
-    // media_state updates UI only — handle it before the peerConnection guard
     if (type === "media_state") {
       this.updateRemoteMediaState(signalData)
       return
     }
 
-    if (!this.peerConnection) return
+    if (!this.peerConnection) {
+      console.log("PeerConnection not ready yet, queueing signal:", type)
+      if (!this.pendingSignals) this.pendingSignals = []
+      this.pendingSignals.push({ type, signalData, fromUserId })
+      return
+    }
 
+    this.processSignalData(type, signalData, fromUserId)
+  }
+
+  async processSignalData(type, signalData, fromUserId) {
     try {
       if (type === "offer") {
         await this.peerConnection.setRemoteDescription(new RTCSessionDescription(signalData))
@@ -277,24 +344,29 @@ export default class extends Controller {
         await this.peerConnection.addIceCandidate(new RTCIceCandidate(signalData))
       }
     } catch (err) {
-      console.error("Error handling WebRTC signal:", type, err)
+      console.error("Error processing WebRTC signal:", type, err)
     }
   }
 
-  // WebRTC Setup
+  // WebRTC Setup — branches on call type: voice = audio only, video = audio+video
   async setupLocalStream() {
     try {
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      })
-      if (this.hasLocalVideoTarget) {
+      const constraints = this.currentCallType === "voice"
+        ? { audio: true, video: false }
+        : { audio: true, video: true }
+
+      this.localStream = await navigator.mediaDevices.getUserMedia(constraints)
+
+      if (this.currentCallType !== "voice" && this.hasLocalVideoTarget) {
         this.localVideoTarget.srcObject = this.localStream
       }
       return true
     } catch (err) {
       console.error("Error accessing camera/microphone:", err)
-      alert("Could not access camera and microphone. Please check browser permissions.")
+      const msg = this.currentCallType === "voice"
+        ? "Could not access microphone. Please check browser permissions."
+        : "Could not access camera and microphone. Please check browser permissions."
+      alert(msg)
       return false
     }
   }
@@ -309,13 +381,31 @@ export default class extends Controller {
       })
     }
 
+    // Process any signals that arrived before peerConnection was ready
+    if (this.pendingSignals && this.pendingSignals.length > 0) {
+      const queue = this.pendingSignals
+      this.pendingSignals = []
+      queue.forEach((sig) => {
+        this.processSignalData(sig.type, sig.signalData, sig.fromUserId)
+      })
+    }
+
     // Remote track received
     this.peerConnection.ontrack = (event) => {
+      console.log("WebRTC ontrack event:", event)
       if (event.streams && event.streams[0]) {
         this.remoteStream = event.streams[0]
-        if (this.hasRemoteVideoTarget) {
-          this.remoteVideoTarget.srcObject = this.remoteStream
+
+        if (this.currentCallType === "voice") {
+          if (this.hasRemoteAudioTarget) {
+            this.remoteAudioTarget.srcObject = this.remoteStream
+          }
+        } else {
+          if (this.hasRemoteVideoTarget) {
+            this.remoteVideoTarget.srcObject = this.remoteStream
+          }
         }
+
         this.onConnected()
       }
     }
@@ -329,11 +419,13 @@ export default class extends Controller {
 
     // Connection state monitoring
     this.peerConnection.onconnectionstatechange = () => {
-      console.log("WebRTC Connection State:", this.peerConnection.connectionState)
+      console.log("WebRTC Connection State:", this.peerConnection ? this.peerConnection.connectionState : "null")
       if (
-        this.peerConnection.connectionState === "disconnected" ||
-        this.peerConnection.connectionState === "failed" ||
-        this.peerConnection.connectionState === "closed"
+        this.peerConnection && (
+          this.peerConnection.connectionState === "disconnected" ||
+          this.peerConnection.connectionState === "failed" ||
+          this.peerConnection.connectionState === "closed"
+        )
       ) {
         this.cleanupCall()
       }
@@ -341,12 +433,13 @@ export default class extends Controller {
   }
 
   onConnected() {
+    if (this.callState === "connected") return
     this.callState = "connected"
     if (this.hasCallStatusTarget) {
-      this.callStatusTarget.textContent = "Connected"
+      this.callStatusTargets.forEach(el => el.textContent = "Connected")
     }
     if (this.hasRemoteAvatarInitialTarget) {
-      this.remoteAvatarInitialTarget.textContent = (this.otherUserName || "U").charAt(0).toUpperCase()
+      this.remoteAvatarInitialTargets.forEach(el => el.textContent = (this.otherUserName || "U").charAt(0).toUpperCase())
     }
     this.startTimer()
     this.sendMediaState()
@@ -359,7 +452,8 @@ export default class extends Controller {
       this.remoteMutedBadgeTarget.style.display = state.audioMuted ? "inline-flex" : "none"
     }
 
-    if (this.hasRemoteCameraOffOverlayTarget) {
+    // Only relevant for video calls
+    if (this.currentCallType !== "voice" && this.hasRemoteCameraOffOverlayTarget) {
       this.remoteCameraOffOverlayTarget.style.display = state.videoOff ? "flex" : "none"
     }
   }
@@ -378,6 +472,29 @@ export default class extends Controller {
     if (this.hasActiveModalTarget) {
       this.activeModalTarget.style.display = screen === "active" ? "flex" : "none"
     }
+
+    // When showing the active call screen, branch UI based on call type
+    if (screen === "active") {
+      const isVoice = this.currentCallType === "voice"
+
+      // Show voice card or video feeds
+      if (this.hasVoiceCallCardTarget) {
+        this.voiceCallCardTarget.style.display = isVoice ? "flex" : "none"
+      }
+      if (this.hasVideoFeedWrapperTarget) {
+        this.videoFeedWrapperTarget.style.display = isVoice ? "none" : "flex"
+      }
+
+      // Hide top-left overlay badge during voice calls (voice card has its own center badges)
+      if (this.hasHeaderOverlayTarget) {
+        this.headerOverlayTarget.style.display = isVoice ? "none" : "flex"
+      }
+
+      // Hide camera toggle button during voice calls
+      if (this.hasVideoBtnWrapperTarget) {
+        this.videoBtnWrapperTarget.style.display = isVoice ? "none" : ""
+      }
+    }
   }
 
   hideModal() {
@@ -388,7 +505,7 @@ export default class extends Controller {
 
   showStatusNotification(msg) {
     if (this.hasCallStatusTarget) {
-      this.callStatusTarget.textContent = msg
+      this.callStatusTargets.forEach(el => el.textContent = msg)
     }
   }
 
@@ -401,7 +518,7 @@ export default class extends Controller {
       const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")
       const seconds = String(elapsedSeconds % 60).padStart(2, "0")
       if (this.hasCallTimerTarget) {
-        this.callTimerTarget.textContent = `${minutes}:${seconds}`
+        this.callTimerTargets.forEach(el => el.textContent = `${minutes}:${seconds}`)
       }
     }, 1000)
   }
@@ -412,7 +529,7 @@ export default class extends Controller {
       this.timerInterval = null
     }
     if (this.hasCallTimerTarget) {
-      this.callTimerTarget.textContent = "00:00"
+      this.callTimerTargets.forEach(el => el.textContent = "00:00")
     }
   }
 
@@ -460,6 +577,11 @@ export default class extends Controller {
 
   // Reset and cleanup peer connection & streams
   cleanupCall() {
+    if (this.callEndTimeout) {
+      clearTimeout(this.callEndTimeout)
+      this.callEndTimeout = null
+    }
+
     this.stopRingtone()
     this.stopTimer()
 
@@ -476,14 +598,25 @@ export default class extends Controller {
       this.remoteVideoTarget.srcObject = null
     }
 
+    if (this.hasRemoteAudioTarget) {
+      this.remoteAudioTarget.srcObject = null
+    }
+
+    this.pendingSignals = []
+
     if (this.peerConnection) {
+      this.peerConnection.onconnectionstatechange = null
+      this.peerConnection.ontrack = null
+      this.peerConnection.onicecandidate = null
       this.peerConnection.close()
       this.peerConnection = null
     }
 
     this.callState = "idle"
+    this.activeCallerId = null
     this.isAudioMuted = false
     this.isVideoOff = false
+    this.currentCallType = "video"
 
     if (this.hasAudioBtnTarget) {
       this.audioBtnTarget.classList.remove("muted")
@@ -493,6 +626,20 @@ export default class extends Controller {
     if (this.hasVideoBtnTarget) {
       this.videoBtnTarget.classList.remove("off")
       this.videoBtnTarget.textContent = "📹 On"
+    }
+
+    // Restore voice/video card visibility to defaults
+    if (this.hasVoiceCallCardTarget) {
+      this.voiceCallCardTarget.style.display = "none"
+    }
+    if (this.hasVideoFeedWrapperTarget) {
+      this.videoFeedWrapperTarget.style.display = "flex"
+    }
+    if (this.hasVideoBtnWrapperTarget) {
+      this.videoBtnWrapperTarget.style.display = ""
+    }
+    if (this.hasHeaderOverlayTarget) {
+      this.headerOverlayTarget.style.display = "flex"
     }
 
     if (this.hasRemoteMutedBadgeTarget) {
@@ -516,5 +663,3 @@ export default class extends Controller {
     }
   }
 }
-
-

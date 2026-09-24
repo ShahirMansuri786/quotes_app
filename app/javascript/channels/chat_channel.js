@@ -77,16 +77,29 @@ export function sendTyping(userId, isTyping) {
   }
 }
 
-export function startVideoCall(callerId, callerName) {
+function ensureSubscription(userId) {
+  if (!chatSubscription) {
+    const container = document.querySelector(".chat-page") || document.querySelector(".messages-container")
+    const conversationId = container ? container.dataset.conversationId : null
+    if (conversationId) {
+      subscribeToChat(conversationId, userId)
+    }
+  }
+}
+
+export function startVideoCall(callerId, callerName, callType = "video") {
+  ensureSubscription(callerId)
   if (chatSubscription) {
     chatSubscription.perform("start_video_call", {
       caller_id: callerId,
-      caller_name: callerName
+      caller_name: callerName,
+      call_type: callType
     })
   }
 }
 
 export function acceptVideoCall(userId) {
+  ensureSubscription(userId)
   if (chatSubscription) {
     chatSubscription.perform("accept_video_call", {
       user_id: userId
@@ -95,6 +108,7 @@ export function acceptVideoCall(userId) {
 }
 
 export function rejectVideoCall(userId) {
+  ensureSubscription(userId)
   if (chatSubscription) {
     chatSubscription.perform("reject_video_call", {
       user_id: userId
@@ -103,6 +117,7 @@ export function rejectVideoCall(userId) {
 }
 
 export function endVideoCall(userId) {
+  ensureSubscription(userId)
   if (chatSubscription) {
     chatSubscription.perform("end_video_call", {
       user_id: userId
@@ -111,6 +126,7 @@ export function endVideoCall(userId) {
 }
 
 export function sendVideoSignal(signalType, signalData, fromUserId, targetUserId) {
+  ensureSubscription(fromUserId)
   if (chatSubscription) {
     chatSubscription.perform("video_signal", {
       signal_type: signalType,

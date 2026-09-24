@@ -1644,8 +1644,14 @@ a {
    VIDEO CALL FEATURE
 ======================================== */
 
-.video-call-header-btn {
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
+}
+
+.video-call-header-btn {
   background: #4f46e5;
   color: white;
   border: none;
@@ -1669,6 +1675,36 @@ a {
 
 .video-call-header-btn:active {
   transform: scale(0.95);
+}
+
+.voice-call-header-btn {
+  background: #059669;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+  transition: all 0.2s ease;
+}
+
+.voice-call-header-btn:hover {
+  background: #047857;
+  transform: scale(1.05);
+}
+
+.voice-call-header-btn:active {
+  transform: scale(0.95);
+}
+
+.video-call-header-btn svg,
+.voice-call-header-btn svg {
+  pointer-events: none;
 }
 
 .video-call-modal-backdrop {
@@ -1983,4 +2019,100 @@ a {
   font-size: 15px;
   color: #94a3b8;
   font-weight: 500;
+}
+
+/* ========================================
+   VOICE CALL ACTIVE CARD
+======================================== */
+
+.voice-call-active-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  width: 100%;
+  height: 100%;
+  gap: 18px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.voice-avatar-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 130px;
+}
+
+.voice-avatar-ring::before,
+.voice-avatar-ring::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(79, 70, 229, 0.15);
+  animation: voice-pulse 2s ease-in-out infinite;
+}
+
+.voice-avatar-ring::before {
+  width: 130px;
+  height: 130px;
+  animation-delay: 0s;
+}
+
+.voice-avatar-ring::after {
+  width: 160px;
+  height: 160px;
+  animation-delay: 0.5s;
+}
+
+@keyframes voice-pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.08); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+.voice-call-avatar {
+  width: 96px;
+  height: 96px;
+  font-size: 38px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.3);
+  z-index: 1;
+  position: relative;
+}
+
+.voice-caller-name {
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.voice-status {
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 16px;
+  border-radius: 20px;
+}
+
+.voice-timer {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 14px;
+  border-radius: 14px;
 }
